@@ -10,7 +10,7 @@ namespace RsyncNet.Libraries
 
         #region Methods: public
 
-        void ProcessBlock(byte[] block, uint index, uint blockSize);
+        void ProcessBlock(byte[] block, int index, int blockSize);
         void Reset();
         void RollByte(byte b);
         void TrimFront();

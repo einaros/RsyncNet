@@ -34,13 +34,13 @@
             long offset = 0;
             while ((read = inputStream.Read(buffer, 0, _blockSize)) > 0)
             {
-                signatureGenerator.ProcessBlock(buffer, 0, (uint) read);
+                signatureGenerator.ProcessBlock(buffer, 0, read);
                 yield return new HashBlock
                                  {
                                      Hash = md5Hasher.ComputeHash(buffer, 0, read),
                                      Checksum = signatureGenerator.Value,
                                      Offset = (uint) offset,
-                                     Length = (uint) read
+                                     Length = read
                                  };
                 offset += read;
             }

@@ -5,11 +5,11 @@
     public class RollingChecksum : IRollingChecksum
     {
         private byte[] _block;
-        private uint _blockSize;
+        private int _blockSize;
 
         private uint _r1;
         private uint _r2;
-        private uint _roundRobinOffset;
+        private int _roundRobinOffset;
 
         public RollingChecksum()
         {
@@ -36,17 +36,17 @@
 
         #region IRollingChecksum Methods
 
-        public void ProcessBlock(byte[] block, uint index, uint blockSize)
+        public void ProcessBlock(byte[] block, int index, int blockSize)
         {
             _block = new byte[blockSize];
             _blockSize = blockSize;
             Array.Copy(block, index, _block, 0, blockSize);
             _r1 = 0;
             _r2 = 0;
-            uint i;
+            int i;
             for (i = 0; i < blockSize - 4; i += 4)
             {
-                uint p = index + i;
+                int p = index + i;
                 _r2 +=
                     4*(_r1 + block[p]) +
                     3*(uint) block[p + 1] +
@@ -75,7 +75,7 @@
         public void RollByte(byte b)
         {
             _r1 -= _block[_roundRobinOffset];
-            _r2 -= _blockSize*_block[_roundRobinOffset];
+            _r2 -= (uint)_blockSize *_block[_roundRobinOffset];
             _r1 += b;
             _r2 += _r1;
             _block[_roundRobinOffset] = b;
@@ -85,7 +85,7 @@
         public void TrimFront()
         {
             _r1 -= _block[_roundRobinOffset];
-            _r2 -= _blockSize*(_block[_roundRobinOffset]);
+            _r2 -= (uint)_blockSize*_block[_roundRobinOffset];
             _roundRobinOffset = ++_roundRobinOffset%_blockSize;
             --_blockSize;
         }

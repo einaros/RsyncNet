@@ -18,8 +18,8 @@
             {
                 hashBlocks[i] = new HashBlock {Hash = new byte[16]};
                 inputStream.Read(hashBlocks[i].Hash, 0, 16);
-                hashBlocks[i].Length = StreamUtils.ReadStreamUInt(inputStream);
-                hashBlocks[i].Offset = StreamUtils.ReadStreamUInt(inputStream);
+                hashBlocks[i].Length = StreamUtils.ReadStreamInt(inputStream);
+                hashBlocks[i].Offset = StreamUtils.ReadStreamLong(inputStream);
                 hashBlocks[i].Checksum = StreamUtils.ReadStreamUInt(inputStream);
             }
             return hashBlocks;
@@ -32,7 +32,7 @@
             {
                 outputStream.Write(block.Hash, 0, 16);
                 outputStream.Write(BitConverter.GetBytes(block.Length), 0, 4);
-                outputStream.Write(BitConverter.GetBytes(block.Offset), 0, 4);
+                outputStream.Write(BitConverter.GetBytes(block.Offset), 0, 8);
                 outputStream.Write(BitConverter.GetBytes(block.Checksum), 0, 4);
             }
         }

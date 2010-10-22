@@ -51,15 +51,15 @@ namespace RsyncNetTests
         [TestMethod]
         public void Checksums_are_equal_for_full_block_and_rolling_updates()
         {
-            uint blockSize = 500;
+            int blockSize = 500;
             var genA = new RollingChecksum();
             int start = 10;
             int rolls = 4;
-            genA.ProcessBlock(_validByteBlock, (uint) start, blockSize);
+            genA.ProcessBlock(_validByteBlock, start, blockSize);
             for (var i = 0; i < rolls; ++i)
                 genA.RollByte(_validByteBlock[start + blockSize + i]);
             var genB = new RollingChecksum();
-            genB.ProcessBlock(_validByteBlock, (uint) (start + rolls), blockSize);
+            genB.ProcessBlock(_validByteBlock, (start + rolls), blockSize);
             Assert.AreEqual(genA.Value, genB.Value);
         }
 
@@ -95,7 +95,7 @@ namespace RsyncNetTests
                                   };
 
             var genA = new RollingChecksum();
-            genA.ProcessBlock(sourceBytes, 0, (uint)sourceBytes.Length);
+            genA.ProcessBlock(sourceBytes, 0, sourceBytes.Length);
 
             var destinationBytes = new byte[]
                                        {
@@ -105,7 +105,7 @@ namespace RsyncNetTests
                                        };
 
             var genB = new RollingChecksum();
-            genB.ProcessBlock(destinationBytes, 0, (uint)destinationBytes.Length);
+            genB.ProcessBlock(destinationBytes, 0, destinationBytes.Length);
         
             Assert.AreNotEqual(genA.Value, genB.Value);
         }

@@ -21,8 +21,8 @@
                 blocks[index] = new HashBlock
                                     {
                                         Checksum = (uint) index,
-                                        Length = (uint) index*2,
-                                        Offset = (uint) index*3,
+                                        Length = index * 2,
+                                        Offset = 9223372036854775807L,
                                         Hash = new byte[16]
                                     };
                 new Random().NextBytes(blocks[index].Hash);
@@ -53,7 +53,7 @@
             }
             var ms = new MemoryStream();
             HashBlockStreamer.Stream(blocks, ms);
-            Assert.AreEqual(blocks.Length*28 + 4, ms.Length);
+            Assert.AreEqual(blocks.Length*32 + 4, ms.Length);
         }
 
         [TestMethod]

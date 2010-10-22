@@ -56,9 +56,17 @@
             Statistics.PossibleMatches = 0;
             Statistics.NonMatching = 0;
 #endif
-            uint currentBlockSize;
-            while ((currentBlockSize = (uint) slidingBuffer.GetNumBytesAvailable()) > 0)
+            int currentBlockSize;
+            while ((currentBlockSize = (int) slidingBuffer.GetNumBytesAvailable()) > 0)
             {
+                // Deal with signed integer limits
+                if (IsSignedIntLength(offset - currentByteDelta.Offset))
+                {
+                    currentByteDelta.Length = (int) (offset - currentByteDelta.Offset);
+                    deltas.Add(currentByteDelta);
+                    startingNewBlock = true;
+                }
+
                 if (startingNewBlock)
                 {
                     currentByteDelta = new ByteDelta {Offset = offset};
@@ -66,7 +74,9 @@
                 }
                 else if (currentBlockSize < _blockSize)
                     ChecksumProvider.TrimFront(); // remaining bytes < block_size, so read nothing new - just trim
-                else ChecksumProvider.RollByte(slidingBuffer[(int)(currentBlockSize - 1)]); // at this point, sigGen needs the last byte of the current block
+                else
+                    ChecksumProvider.RollByte(slidingBuffer[(int) (currentBlockSize - 1)]);
+                        // at this point, sigGen needs the last byte of the current block
 
                 uint currentBlockChecksum = ChecksumProvider.Value;
                 ushort currentBlockChecksumHash = RollingChecksum.HashChecksum(currentBlockChecksum);
@@ -88,7 +98,7 @@
 #if DEBUG
                             Statistics.Matching += 1;
 #endif
-                            if ((currentByteDelta.Length = offset - currentByteDelta.Offset) > 0)
+                            if ((currentByteDelta.Length = (int) (offset - currentByteDelta.Offset)) > 0)
                             {
                                 deltas.Add(currentByteDelta);
                             }
@@ -112,7 +122,7 @@
                 startingNewBlock = false;
             }
             Statistics.FileLength = offset;
-            if (!startingNewBlock && (currentByteDelta.Length = offset - currentByteDelta.Offset) > 0)
+            if (!startingNewBlock && (currentByteDelta.Length = (int) (offset - currentByteDelta.Offset)) > 0)
             {
                 deltas.Add(currentByteDelta);
             }
@@ -154,6 +164,11 @@
                     _remoteBlocksIndexTable[hash] = new List<HashBlock>(new[] {entry});
                 }
             }
+        }
+
+        private static bool IsSignedIntLength(long l)
+        {
+            return l == 2147483647;
         }
 
         #endregion

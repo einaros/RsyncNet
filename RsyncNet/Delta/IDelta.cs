@@ -6,7 +6,7 @@
     {
         #region Methods: public
 
-        long Length { get; set; }
+        int Length { get; set; }
         long Offset { get; set; }
 
         #endregion

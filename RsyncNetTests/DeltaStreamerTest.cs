@@ -44,7 +44,7 @@
             var deltas = new[] {new CopyDelta {Offset = 42, Length = 24}};
             var outStream = new MemoryStream();
             streamer.Send(deltas, new MemoryStream(), outStream);
-            Assert.AreEqual(24, BitConverter.ToInt32(outStream.GetBuffer(), 5));
+            Assert.AreEqual(24, BitConverter.ToInt32(outStream.GetBuffer(), 9));
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@
             var deltas = new[] {new CopyDelta {Offset = 42, Length = 24}};
             var outStream = new MemoryStream();
             streamer.Send(deltas, new MemoryStream(), outStream);
-            Assert.AreEqual(42, BitConverter.ToInt32(outStream.GetBuffer(), 1));
+            Assert.AreEqual(42, BitConverter.ToInt64(outStream.GetBuffer(), 1));
         }
 
         [TestMethod]
@@ -217,15 +217,5 @@
         }
 
         #endregion
-
-        //[TestMethod]
-        //[ExpectedException(typeof(IOException))]
-        //public void Send_throws_for_input_stream_with_insufficient_data()
-        //{
-        //    var deltas = new[] { new ByteDelta { Offset = 0, Length = 3 } };
-        //    var dataStream = new MemoryStream(new byte[2]);
-        //    var streamer = new DeltaStreamer();
-        //    streamer.Send(deltas, dataStream, new MemoryStream());
-        //}
     }
 }

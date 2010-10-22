@@ -6,7 +6,7 @@
 
         public uint Checksum { get; set; }
         public byte[] Hash { get; set; }
-        public long Length { get; set; }
+        public int Length { get; set; }
         public long Offset { get; set; }
 
         #endregion
