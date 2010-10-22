@@ -1,0 +1,3 @@
+RsyncNet
+
+An Rsync inspired library for data transfer and synchronization between client and recipient.
