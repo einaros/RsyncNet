@@ -27,18 +27,16 @@
         public IEnumerable<HashBlock> ProcessStream(Stream inputStream)
         {
             if (inputStream == null) throw new ArgumentNullException("inputStream");
-            MD5 md5Hasher = MD5.Create();
-            var signatureGenerator = new RollingChecksum();
             int read;
             var buffer = new byte[_blockSize];
             long offset = 0;
             while ((read = inputStream.Read(buffer, 0, _blockSize)) > 0)
             {
-                signatureGenerator.ProcessBlock(buffer, 0, read);
+                ChecksumProvider.ProcessBlock(buffer, 0, read);
                 yield return new HashBlock
                                  {
-                                     Hash = md5Hasher.ComputeHash(buffer, 0, read),
-                                     Checksum = signatureGenerator.Value,
+                                     Hash = HashAlgorithm.ComputeHash(buffer, 0, read),
+                                     Checksum = ChecksumProvider.Value,
                                      Offset = (uint) offset,
                                      Length = read
                                  };
