@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "SampleApp\SampleApp.csproj", "{BEEBB155-156B-4823-B8BE-126EB21D1490}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = RsyncNet.vsmdi
@@ -47,6 +49,16 @@ Global
 		{6A0508E4-D4E4-43EC-BB28-D7403103C19C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6A0508E4-D4E4-43EC-BB28-D7403103C19C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6A0508E4-D4E4-43EC-BB28-D7403103C19C}.Release|x86.ActiveCfg = Release|Any CPU
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Debug|x86.ActiveCfg = Debug|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Debug|x86.Build.0 = Debug|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Release|Any CPU.ActiveCfg = Release|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Release|Mixed Platforms.Build.0 = Release|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Release|x86.ActiveCfg = Release|x86
+		{BEEBB155-156B-4823-B8BE-126EB21D1490}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
