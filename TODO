@@ -1,10 +1,4 @@
-Right now HashBlock uses long for both offset and length, but HashStreamer sendes four bytes from each of them.
-The same goes for DeltaStreamer, which gets values 8 bytes long, but sends only four.
-My suggestion is that:
-  offset is long, length is int, and all pieces of the library are updated to chunk blocks into 2gb sized pieces
-This will have to be updated in DeltaStreamer, DeltaGenerator, HashBlockStreamer, HashBlockGenerator.
-At present, HashBlocks will never cover lengths higher than BlockSize (int).
-ByteDeltas, however, may presently be longer than int limits allow.
+Overloads or verified support for memory mapped views of files for hashgenerator, deltagenerator and deltastreamer
 
 Implement an incremental hash of the entire file as sender processes its source file
 
@@ -12,13 +6,10 @@ Implement an incremental has of the entire file as recipient processes its recon
 
 Verify that the written file is the same as the one on the sender's side
 
-int64 support for offsets and such
-
 overloads for memory mapped files
 
 SlidingStreamBuffer could possibly benefit from being made asynchronous
 
-Trim which data is sent with HashBlock - is length really required?
-=> Yep
-
 Verify long support (> 2GB)
+
+HashBlockStreamer should be made independant of hashblock size (currently 16, which fits with md5)

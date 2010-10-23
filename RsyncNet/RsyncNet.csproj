@@ -49,7 +49,6 @@
     <Compile Include="Delta\DeltaStreamer.cs" />
     <Compile Include="Hash\FileHash.cs" />
     <Compile Include="Hash\HashBlockGenerator.cs" />
-    <Compile Include="DataReconstructor.cs" />
     <Compile Include="Hash\HashBlock.cs" />
     <Compile Include="Hash\HashBlockStreamer.cs" />
     <Compile Include="Delta\IDelta.cs" />

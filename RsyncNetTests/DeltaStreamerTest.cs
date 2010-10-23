@@ -8,12 +8,14 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using RsyncNet.Delta;
+    using RsyncNet.Helpers;
 
     [TestClass]
     public class DeltaStreamerTest
     {
         #region Methods: public
 
+        #region Send
         [TestMethod]
         public void Send_has_correct_data_for_byte_delta()
         {
@@ -80,7 +82,7 @@
 
         [TestMethod]
         [ExpectedException(typeof (IOException))]
-        public void Send_throws_for_delta_out_of_input_stream_bounds_for_byte_delta()
+        public void Send_throws_for_delta_out_of_inputStream_bounds_for_byte_delta()
         {
             var deltas = new[] {new ByteDelta {Offset = 3, Length = 3}};
             var dataStream = new MemoryStream(new byte[2]);
@@ -99,7 +101,7 @@
 
         [TestMethod]
         [ExpectedException(typeof (IOException))]
-        public void Send_throws_for_input_stream_with_insufficient_data_for_byte_delta()
+        public void Send_throws_for_inputStream_with_insufficient_data_for_byte_delta()
         {
             var deltas = new[] {new ByteDelta {Offset = 0, Length = 3}};
             var dataStream = new MemoryStream(new byte[2]);
@@ -109,7 +111,7 @@
 
         [TestMethod]
         [ExpectedException(typeof (IOException))]
-        public void Send_throws_for_input_stream_without_forward_seekability_for_copy_delta()
+        public void Send_throws_for_inputStream_without_forward_seekability_for_copy_delta()
         {
             var deltas = new[] {new CopyDelta {Offset = 0, Length = 1234}};
             var dataStreamMock = new Mock<MemoryStream>(MockBehavior.Strict);
@@ -128,7 +130,7 @@
 
         [TestMethod]
         [ExpectedException(typeof (ArgumentNullException))]
-        public void Send_throws_for_null_input_stream()
+        public void Send_throws_for_null_inputStream()
         {
             var streamer = new DeltaStreamer();
             streamer.Send(new ByteDelta[10], null, new MemoryStream());
@@ -199,6 +201,94 @@
             streamer.Send(deltas, dataStreamMock.Object, new MemoryStream());
             dataStreamMock.VerifyAll();
         }
+        #endregion
+
+        #region Receive
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Receive_throws_for_unseekable_inputStream()
+        {
+            var inputStreamMock = new Mock<MemoryStream>(MockBehavior.Strict);
+            inputStreamMock.SetupGet(x => x.CanSeek).Returns(false);
+            var streamer = new DeltaStreamer();
+            streamer.Receive(new MemoryStream(), inputStreamMock.Object, new MemoryStream());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Receive_throws_for_null_deltaStream()
+        {
+            var streamer = new DeltaStreamer();
+            streamer.Receive(null, new MemoryStream(), new MemoryStream());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Receive_throws_for_null_inputStream()
+        {
+            var streamer = new DeltaStreamer();
+            streamer.Receive(null, new MemoryStream(), new MemoryStream());
+        }
+        
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Receive_throws_for_null_outputStream()
+        {
+            var streamer = new DeltaStreamer();
+            streamer.Receive(null, new MemoryStream(), new MemoryStream());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof (IOException))]
+        public void Receive_throws_for_illegal_command_byte()
+        {
+            var streamer = new DeltaStreamer();
+            streamer.Receive(new MemoryStream(new[] { (byte) 'G' }), new MemoryStream(), new MemoryStream());            
+        }
+
+        [TestMethod]
+        public void Receive_copies_data_from_inputStream()
+        {
+            var deltaStream = new MemoryStream();
+            deltaStream.WriteByte(DeltaStreamer.DeltaStreamConstants.COPY_BLOCK_START_MARKER);
+            deltaStream.WriteLong(4); // Start the copy from byte four
+            deltaStream.WriteInt(10); // Copy 10 bytes
+            deltaStream.Seek(0, SeekOrigin.Begin);
+
+            var inputStream = new MemoryStream(); // Must have 4 + 10 bytes
+            for (int i = 0; i < 20; ++i) inputStream.WriteByte((byte) (255 - i));
+            inputStream.Seek(0, SeekOrigin.Begin);
+
+            var outputStream = new MemoryStream();
+            
+            var streamer = new DeltaStreamer();
+            streamer.Receive(deltaStream, inputStream, outputStream);
+
+            Assert.AreEqual(10, outputStream.Length);
+            outputStream.GetBuffer().Take(14).SequenceEqual(inputStream.GetBuffer().Skip(3).Take(14));
+        }
+
+        [TestMethod]
+        public void Receive_writes_new_bytes_from_deltaStream()
+        {
+            var deltaStream = new MemoryStream();
+            deltaStream.WriteByte(DeltaStreamer.DeltaStreamConstants.NEW_BLOCK_START_MARKER);
+            deltaStream.WriteInt(10); // Write 10 bytes
+            for (int i = 0; i < 10; ++i) deltaStream.WriteByte((byte) (200 - i));
+            deltaStream.Seek(0, SeekOrigin.Begin);
+
+            var inputStream = new MemoryStream(); // empty
+            var outputStream = new MemoryStream();
+
+            var streamer = new DeltaStreamer();
+            streamer.Receive(deltaStream, inputStream, outputStream);
+
+            Assert.AreEqual(10, outputStream.Length);
+            outputStream.GetBuffer().Take(10).SequenceEqual(deltaStream.GetBuffer().Skip(5).Take(10));
+        }
+
+        #endregion
 
         [TestMethod]
         [ExpectedException(typeof (ArgumentException))]

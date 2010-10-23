@@ -12,28 +12,28 @@
 
         public static HashBlock[] Destream(Stream inputStream)
         {
-            uint count = StreamUtils.ReadStreamUInt(inputStream);
+            uint count = inputStream.ReadUInt();
             var hashBlocks = new HashBlock[count];
             for (int i = 0; i < count; ++i)
             {
                 hashBlocks[i] = new HashBlock {Hash = new byte[16]};
                 inputStream.Read(hashBlocks[i].Hash, 0, 16);
-                hashBlocks[i].Length = StreamUtils.ReadStreamInt(inputStream);
-                hashBlocks[i].Offset = StreamUtils.ReadStreamLong(inputStream);
-                hashBlocks[i].Checksum = StreamUtils.ReadStreamUInt(inputStream);
+                hashBlocks[i].Length = inputStream.ReadInt();
+                hashBlocks[i].Offset = inputStream.ReadLong();
+                hashBlocks[i].Checksum = inputStream.ReadUInt();
             }
             return hashBlocks;
         }
 
         public static void Stream(IEnumerable<HashBlock> hashBlocks, Stream outputStream)
         {
-            outputStream.Write(BitConverter.GetBytes((uint) hashBlocks.Count()), 0, 4);
+            outputStream.WriteUInt((uint) hashBlocks.Count());
             foreach (HashBlock block in hashBlocks)
             {
                 outputStream.Write(block.Hash, 0, 16);
-                outputStream.Write(BitConverter.GetBytes(block.Length), 0, 4);
-                outputStream.Write(BitConverter.GetBytes(block.Offset), 0, 8);
-                outputStream.Write(BitConverter.GetBytes(block.Checksum), 0, 4);
+                outputStream.WriteInt(block.Length);
+                outputStream.WriteLong(block.Offset);
+                outputStream.WriteUInt(block.Checksum);
             }
         }
 

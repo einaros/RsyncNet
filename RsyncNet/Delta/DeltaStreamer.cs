@@ -31,6 +31,43 @@
 
         #region Methods: public
 
+        /// <summary>
+        /// Reconstructs remote data, given a delta stream and a random access / seekable input stream,
+        /// all written to outputStream.
+        /// </summary>
+        /// <param name="deltaStream">sequential stream of deltas</param>
+        /// <param name="inputStream">seekable and efficiently random access stream</param>
+        /// <param name="outputStream">sequential stream for output</param>
+        public void Receive(Stream deltaStream, Stream inputStream, Stream outputStream)
+        {
+            if (deltaStream == null) throw new ArgumentNullException("deltaStream");
+            if (inputStream == null) throw new ArgumentNullException("inputStream");
+            if (outputStream == null) throw new ArgumentNullException("outputStream");
+            if (inputStream.CanSeek == false) throw new InvalidOperationException("inputStream must be seekable");
+
+            int commandByte;
+            while ((commandByte = deltaStream.ReadByte()) != -1)
+            {
+                if (commandByte == DeltaStreamConstants.NEW_BLOCK_START_MARKER)
+                {
+                    int length = deltaStream.ReadInt();
+                    var buffer = new byte[length];
+                    deltaStream.Read(buffer, 0, length);
+                    outputStream.Write(buffer, 0, length);
+                }
+                else if (commandByte == DeltaStreamConstants.COPY_BLOCK_START_MARKER)
+                {
+                    long sourceOffset = deltaStream.ReadLong();
+                    int length = deltaStream.ReadInt();
+                    var buffer = new byte[length];
+                    inputStream.Seek(sourceOffset, SeekOrigin.Begin);
+                    inputStream.Read(buffer, 0, length);
+                    outputStream.Write(buffer, 0, length);
+                }
+                else throw new IOException("Invalid data found in deltaStream");
+            }
+        }
+
         public void Send(IEnumerable<IDelta> deltas, Stream inputStream, Stream outputStream)
         {
             if (deltas == null) throw new ArgumentNullException("deltas");
@@ -51,49 +88,6 @@
             }
         }
 
-        //public delegate void WriteNewBlockDelegate(int length);
-        //public delegate void CopyBlockDelegate(long sourceOffset, int length);
-
-        //public void Receive(Stream deltaStream, WriteNewBlockDelegate newBlockCallback, CopyBlockDelegate copyBlockCallback)
-        /// <summary>
-        /// Reconstructs remote data, given a delta stream and a random access / seekable input stream,
-        /// all written to outputStream.
-        /// </summary>
-        /// <param name="deltaStream"></param>
-        /// <param name="inputStream"></param>
-        /// <param name="outputStream"></param>
-        public void Receive(Stream deltaStream, Stream inputStream, Stream outputStream)
-        {
-            //int commandByte;
-            //uint lengthThusFar = 0;
-            //while ((commandByte = deltaStream.ReadByte()) != -1)
-            //{
-            //    if (commandByte == NEW_BLOCK_START_MARKER)
-            //    {
-            //        // delta format
-            //        // N     dest     length   data
-            //        // byte  uint32    uint32    bytes
-            //        uint dest = StreamUtils.ReadStreamUInt(deltaStream);
-            //        uint length = StreamUtils.ReadStreamUInt(deltaStream);
-            //        lengthThusFar += length;
-            //        //Console.Out.WriteLine("New block of length {0}. Total thus far: {1}.", length, lengthThusFar);
-            //        WriteNewBlock(dest, length);
-            //    }
-            //    else if (commandByte == COPY_BLOCK_START_MARKER)
-            //    {
-            //        // delta format
-            //        // C     dest     source   length
-            //        // byte  uint32   uint32   uint32
-            //        uint dest = StreamUtils.ReadStreamUInt(deltaStream);
-            //        uint source = StreamUtils.ReadStreamUInt(deltaStream);
-            //        uint length = StreamUtils.ReadStreamUInt(deltaStream);
-            //        lengthThusFar += length;
-            //        //Console.Out.WriteLine("Old block of length {0} from {1}. Total thus far: {2}.", length, source, lengthThusFar);
-            //        CopyExistingBlock(dest, source, length);
-            //    }
-            //}
-        }
-
         #endregion
 
         #region Methods: private
@@ -101,7 +95,7 @@
         private void SendByteDelta(ByteDelta delta, Stream inputStream, Stream outputStream)
         {
             outputStream.WriteByte(DeltaStreamConstants.NEW_BLOCK_START_MARKER);
-            outputStream.Write(BitConverter.GetBytes(delta.Length), 0, sizeof(int));
+            outputStream.WriteInt(delta.Length);
             var buffer = new byte[delta.Length];
             inputStream.Seek(delta.Offset, SeekOrigin.Begin);
             long totalRead = 0;
@@ -120,8 +114,8 @@
         {
             if (inputStream.CanSeek == false) throw new IOException("inputStream not seekable");
             outputStream.WriteByte(DeltaStreamConstants.COPY_BLOCK_START_MARKER);
-            outputStream.Write(BitConverter.GetBytes(delta.Offset), 0, sizeof(long));
-            outputStream.Write(BitConverter.GetBytes(delta.Length), 0, sizeof(int));
+            outputStream.WriteLong(delta.Offset);
+            outputStream.WriteInt(delta.Length);
             inputStream.Seek(delta.Length, SeekOrigin.Current);
         }
 
